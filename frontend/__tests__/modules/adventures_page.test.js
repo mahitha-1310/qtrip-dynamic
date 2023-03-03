@@ -9,7 +9,9 @@ import {
   getFiltersFromLocalStorage,
   generateFilterPillsAndUpdateDOM
 } from "../../modules/adventures_page.js";
+
 require("jest-fetch-mock").enableMocks();
+
 const fs = require("fs");
 const path = require("path");
 const html = fs.readFileSync(
@@ -17,8 +19,11 @@ const html = fs.readFileSync(
   "utf8"
 );
 const mockAdventuresData = require("../fixtures/adventures.json");
+
 jest.dontMock("fs");
+
 Storage.prototype.getItem = jest.fn(() => expectedPayload);
+
 describe("Adventure Page Tests", function () {
   beforeEach(() => {
     Object.defineProperty(window, "localStorage", {
@@ -39,20 +44,27 @@ describe("Adventure Page Tests", function () {
     const city = await getCityFromURL("?city=london");
     expect(city).toEqual("london");
   });
+
   it("fetchAdventures() - Makes a fetch call for /adventures API endpoint and returns an array with the adventures data", async () => {
     fetch.mockResponseOnce(JSON.stringify(mockAdventuresData));
+
     const data = await fetchAdventures("bengaluru");
+
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/adventures"));
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("?city=bengaluru")
     );
+
     expect(data).toBeInstanceOf(Array);
     expect(data).toEqual(mockAdventuresData);
   });
+
   it("fetchAdventures() - Catches errors and returns null, if fetch call fails", async () => {
     fetch.mockReject(new Error(null));
+
     const data = fetchAdventures("bengaluru");
+
     await expect(data).resolves.toEqual(null);
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(fetch).toHaveBeenCalledWith(expect.stringContaining("/adventures"));
@@ -129,9 +141,11 @@ describe("Adventure Page Tests", function () {
       },
     ];
     let output = filterByDuration(input, "6", "10");
+
     expect(output).toBeInstanceOf(Array);
     expect(output.sort()).toEqual(expected.sort());
   });
+
   it("filterByCategory() - Returns an array of adventures, filtered by one category", function () {
     const expected = [
       {
@@ -168,9 +182,11 @@ describe("Adventure Page Tests", function () {
       },
     ];
     let output = filterByCategory(input, ["Party"]);
+
     expect(output).toBeInstanceOf(Array);
     expect(output.sort()).toEqual(expected.sort());
   });
+
   it("filterByCategory() - Returns an array of adventures, filtered by multiple categories", function () {
     const expected = [
       {
@@ -227,9 +243,11 @@ describe("Adventure Page Tests", function () {
       },
     ];
     let output = filterByCategory(input, ["Party", "Cycling"]);
+
     expect(output).toBeInstanceOf(Array);
     expect(output.sort()).toEqual(expected.sort());
   });
+
   it("filterFunction() - Returns an array of adventures, filtered by both duration and categories", function () {
     const expected = [
       {
@@ -304,26 +322,34 @@ describe("Adventure Page Tests", function () {
       expected.map((a) => a.id).sort()
     );
   });
+
   it("saveFiltersToLocalStorage() - Adds the updated filter as a string to localstorage", function () {
     const filters = { duration: "12-20", category: ["Beaches", "Cycling"] };
     saveFiltersToLocalStorage(filters);
+
     expect(window.localStorage.setItem).toHaveBeenCalledTimes(1);
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
       "filters",
       JSON.stringify(filters)
     );
   });
+
   it("getFiltersFromLocalStorage() - Retrieves filters from local storage as an object", function () {
     const filters = { duration: "12-20", category: ["Beaches", "Cycling"] };
     window.localStorage.getItem = jest.fn(() => JSON.stringify(filters));
+
     const output = getFiltersFromLocalStorage();
+
     expect(window.localStorage.getItem).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem).toHaveBeenCalledWith("filters");
     expect(typeof output).not.toEqual("string");
   });
+
   it("generateFilterPillsAndUpdateDOM() - Sets the category filter pills correctly", function () {
     const filters = { duration: "12-20", category: ["Beaches", "Cycling"] };
+
     generateFilterPillsAndUpdateDOM(filters);
+
     expect(document.getElementById("category-list").children.length).toEqual(filters.category.length);    
   });
 });
